@@ -100,7 +100,7 @@ def get_auction_links(driver):
             print("Failed to find 'Bid Live' buttons. Closing the Browser window")
             break
         # checking the verification of the account
-        check_verification(driver)
+        check_verification(driver , '//button[@class="sale-registration_modalbutton__zg3Rr sale-registration_secondary__mnGSr sale-registration_justwatch__sio6k"]')
 
         # Loop through those cards and collect the auction links
         for i in range(1 , len(bid_live_buttons) + 1):
@@ -196,7 +196,7 @@ def check_verification(driver, xpath = None):
 def open_future_events_section(driver):
     try:
         future_events_element = WebDriverWait(driver, 40).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[@class='vc-more-dates futureDate-toggle']"))
+            EC.presence_of_element_located((By.XPATH, "//div[@class='vc-more-dates futureDate-toggle']"))
         )
         future_events_element.click()
         print("Auction section opened.")
@@ -253,21 +253,21 @@ def extract_auction_details(driver):
                     print('auction_date_time: ',auction_date_time)
                     # Check if the auction date is in the past or now
                     if auction_date_time <= current_time:
-                        # car_data = extract_car_data(driver)
-                        # print("Car data")
-                        # for car in car_data:
-                        #     auction_data.append({
-                        #         "Auction Time": auction_time,
-                        #         "Auction Type": auction_type,
-                        #         "Auction Date and Time": auction_date_time_str,
-                        #         "Car Details": car['Car Details'],
-                        #         "Car Status": car['car_status'],
-                        #         "Car Price": car['car_price'],
-                        #         'stock_No': car['stock_No'],
-                        #         "Car Specifications": car['Car Specifications'],
-                        #         "Car Condition Report": car['Car Condition Report'],
-                        #         "Image URLs": car['Image URLs'],
-                        #     })
+                        car_data = extract_car_data(driver)
+                        print("Car data")
+                        for car in car_data:
+                            auction_data.append({
+                                "Auction Time": auction_time,
+                                "Auction Type": auction_type,
+                                "Auction Date and Time": auction_date_time_str,
+                                "Car Details": car['Car Details'],
+                                "Car Status": car['car_status'],
+                                "Car Price": car['car_price'],
+                                'stock_No': car['stock_No'],
+                                "Car Specifications": car['Car Specifications'],
+                                "Car Condition Report": car['Car Condition Report'],
+                                "Image URLs": car['Image URLs'],
+                            })
 
                         print(f"Auction data collected for auction on {auction_date_time_str}.")
                     else:
@@ -425,10 +425,11 @@ def get_auction_data(driver, link):
         # link = 'https://us.pickles-au.velocicast.io/'
         driver.get(link)
         
-        # login_to_pickles(driver, username, password)
+        login_to_pickles(driver=driver, username='vishaal.dutt@gmail.com', password='Pickleshasabluelogo2023')
 
         driver.implicitly_wait(2)
-        check_verification(driver)
+        print("--------------------- here ----------------")
+        check_verification(driver , xpath='//button[@class="sale-registration_modalbutton__zg3Rr sale-registration_secondary__mnGSr sale-registration_justwatch__sio6k"]')
         try:
             redirect_btn = WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Bid Live"]//button')))
             redirect_btn.click()
@@ -436,6 +437,7 @@ def get_auction_data(driver, link):
             print("Redirect button not found. Continuing with the script.")
 
         # driver.switch_to.window(driver.window_handles[-1])
+        check_verification(driver , xpath='//button[@class="sale-registration_modalbutton__zg3Rr sale-registration_secondary__mnGSr sale-registration_justwatch__sio6k"]')
         driver.implicitly_wait(2)
         auction_data = extract_auction_details(driver)
         
@@ -444,7 +446,7 @@ def get_auction_data(driver, link):
         if os.path.exists('./DataFile.csv') :
             os.remove('./DataFile.csv')
         df.to_csv("DataFile.csv", index=False)
-        print("Data saved to auction_data.csv")
+        print("Data saved to DataFile.csv")
         
     except Exception as e:
         print(f"Error in main function: {e}")
@@ -457,8 +459,7 @@ def get_auction_data(driver, link):
 if __name__ == '__main__':
     driver = create_driver(headless=False)
     link = 'https://www.pickles.com.au/upcoming-auctions/cars-motorcycles/'
-    registerAuctions(driver , link)
+    # registerAuctions(driver , link)
     # with freeze_time("2025-03-24 04:00 AM AEDT"):
     get_auction_data(driver, link)
     print("Close the driver")
-    driver.quit()
